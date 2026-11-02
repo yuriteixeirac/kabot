@@ -1,4 +1,4 @@
-import type { Product, ProductList, Category } from './types';
+import type { Product, ProductList, Category } from './types.ts';
 
 async function getTotalPages(category: Category): Promise<number> {
 	let response = await fetch(`https://servicespub.prod.api.aws.grupokabum.com.br/catalog/v2/products-by-category/${category}?page_number=1&page_size=100&facet_filters=&sort=most_searched&is_prime=false&payload_data=products_category_filters&include=gift`);
