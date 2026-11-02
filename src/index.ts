@@ -1,42 +1,23 @@
-import type { Product, ProductList, Category } from './types.ts';
+import type { Product, ProductList, Category } from './types.js';
+import { buildUrl, fetchPage } from './services/kabum-service.js';
 
-async function getTotalPages(category: Category): Promise<number> {
-	let response = await fetch(`https://servicespub.prod.api.aws.grupokabum.com.br/catalog/v2/products-by-category/${category}?page_number=1&page_size=100&facet_filters=&sort=most_searched&is_prime=false&payload_data=products_category_filters&include=gift`);
-
-	if (!response.ok) {
-		throw new Error("Requisição falhou.");
-	}
-
-	const data: ProductList = await response.json();
-
-	return data.meta.total_pages_count;
+function processData(product: Product): void {
+	console.log(product.attributes.title);
 }
 
-async function fetchCurrentPage(page: number, category: Category): Promise<ProductList> {
-	let response = await fetch(`https://servicespub.prod.api.aws.grupokabum.com.br/catalog/v2/products-by-category/${category}?page_number=${page}&page_size=100&facet_filters=&sort=most_searched&is_prime=false&payload_data=products_category_filters&include=gift`);
-	
-	if (!response.ok) {
-		throw new Error("ERRO DE REQUISIÇÃO");
-	}
+async function collectCategory(category: Category) {
+	let response = await fetchPage(category, 1);
+	const totalPagesCount = response.meta.total_pages_count;
 
-	return await response.json();
-}
+	response.data.forEach(processData);
 
-async function fetchProducts(category: Category) {
-	const totalPagesCount: number = await getTotalPages(category);
-
-	for (let currentPage = 1; currentPage <= totalPagesCount; currentPage++) {
-		let productList: ProductList = await fetchCurrentPage(currentPage, category);
-		productList.data.forEach((product: Product) => {
-			console.log(product.attributes.title);
-		});
+	for (let currentPage = 2; currentPage <= totalPagesCount; currentPage++) {
+		let response: ProductList = await fetchPage(category, currentPage);
+		response.data.forEach(processData);
 	}
 }
 
 const categories: Category[] = ["hardware", "perifericos", "gamer", "computadores"];
-
-categories.forEach(
-	async (element: Category) => {
-		await fetchProducts(element);
-	}
-);
+for (const category of categories) {
+	await collectCategory(category);
+}
