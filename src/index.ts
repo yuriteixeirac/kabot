@@ -1,32 +1,40 @@
-import type { KabumProduct, KabumResponse, Category, Product } from './types.js';
-import { fetchPage } from './services/kabum-service.js';
+import type { KabumResponse, Category, Product, Registry } from './types.js';
+import { fetchPage, convertToProductSchema } from './services/kabum-service.js';
+import type { Connection } from 'mariadb';
+import { getDb } from './repository/database-singleton.js';
+import { upsertProduct } from './repository/product-repository.js';
+import { insertRegistry } from './repository/registry-repository.js';
 
-async function processData(product: Product): Promise<void> {
-	console.log(product);	
-}
-
-function convertToSchema(product: KabumProduct, category: Category): Product {
-	return {
-		id: product.id,
-		title: product.attributes.title,
-		category: category,
-		image: product.attributes.images[0],
-	}
+async function processData(conn: Connection, product: Product, registry: Registry): Promise<void> {
+	await upsertProduct(conn, product);
+	await insertRegistry(conn, registry);
 }
 
 async function collectCategory(category: Category): Promise<void> {
+	let conn = await getDb({
+		user: process.env.MARIADB_USER || 'root',
+		host: process.env.MARIADB_HOST || 'localhost',
+		password: process.env.MARIADB_PASSWORD || 'root',
+		port: (process.env.MARIADB_PORT || 3306) as number,
+		database: process.env.MARIADB_USER || 'kabot',
+	});
+
 	let response: KabumResponse = await fetchPage(category, 1);
 	const totalPagesCount = response.meta.total_pages_count;
 
 	response.data.forEach(async (p: any) => {
-		await processData(convertToSchema(p, category));
+		let [product, registry] = convertToProductSchema(p, category);
+		await processData(conn, product, registry); 
 	});
 
 	for (let currentPage = 2; currentPage <= totalPagesCount; currentPage++) {
 		let response: KabumResponse = await fetchPage(category, currentPage);
 		response.data.forEach(async (p: any): Promise<void> => {
+			let [product, registry] = convertToProductSchema(p, category);
 			await processData(
-				convertToSchema(p, category)
+				conn,
+				product,
+				registry
 			);
 		});
 	}
