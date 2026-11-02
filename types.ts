@@ -1,6 +1,7 @@
 export type Category = "hardware" | "perifericos" | "computadores" | "gamer";
 
 export interface Product {
+	id: number;
 	attributes: { title: string };
 }
 

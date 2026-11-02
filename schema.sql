@@ -1,0 +1,17 @@
+-- MariaDB Schema
+
+CREATE TABLE product (
+	id INT PRIMARY KEY,
+	title VARCHAR(255) NOT NULL,
+	category VARCHAR(50) NOT NULL,
+	image VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE registry (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	price DECIMAL(7, 2) NOT NULL,
+	discount_percentage DECIMAL(4, 2) NOT NULL DEFAULT 0,
+	product_id INT NOT NULL,
+	registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (product_id) REFERENCES product(id)
+);
