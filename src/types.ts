@@ -5,14 +5,17 @@ export interface KabumProduct {
 	attributes: { 
 		title: string;
 		price: number;
-		discount_percentage: number;
 		images: string[];
+		price_with_discount: number;
+		offer: {
+			price_with_discount: number;
+		} | undefined
 	};
 }
 
 export interface KabumResponse {
 	meta: { total_pages_count: number };
-	data: Product[];
+	data: KabumProduct[];
 }
 
 // Database schemas
@@ -27,6 +30,5 @@ export interface Registry {
 	id?: number;
 	productId: number;
 	price: number;
-	discountPercentage: number;
 	registeredAt: Date;
 }

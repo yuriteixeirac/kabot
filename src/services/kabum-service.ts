@@ -19,17 +19,17 @@ export async function fetchPage(category: Category, page: number): Promise<Kabum
 }
 
 export function convertToProductSchema(kabumProduct: KabumProduct, category: Category): [Product, Registry] {
+	const attributes = kabumProduct.attributes;
 	const product: Product = {
 		id: kabumProduct.id,
-		title: kabumProduct.attributes.title,
+		title: attributes.title,
 		category: category,
-		image: kabumProduct.attributes.images?.[0] ?? "",
+		image: attributes.images?.[0] ?? "",
 	}
 
 	const registry: Registry = {
 		productId: kabumProduct.id,
-		price: kabumProduct.attributes.price,
-		discountPercentage: kabumProduct.attributes.discount_percentage,
+		price: attributes.offer?.price_with_discount ?? attributes.price_with_discount,
 		registeredAt: new Date(),
 	}
 
@@ -43,20 +43,24 @@ async function processData(conn: Connection, kabumProduct: KabumProduct, categor
 	await insertRegistry(conn, registry);
 }
 
-export async function collectCategory(conn: Connection, category: Category): Promise<void> {
+export async function collectCategory(conn: Connection, category: Category, seen: Set<number>): Promise<void> {
 	let response: KabumResponse = await fetchPage(category, 1);
 	const totalPagesCount = response.meta.total_pages_count;
 
-	response.data.forEach(async (product: any) => {
+	for (const product of response.data) {
+		if (seen.has(product.id)) continue;
 		await processData(conn, product, category);
-	});
+		seen.add(product.id);
+	} 
 
 	for (let currentPage = 2; currentPage <= totalPagesCount; currentPage++) {
 		let response: KabumResponse = await fetchPage(category, currentPage);
 
-		response.data.forEach(async (product: any) => {
+		for (const product of response.data) {
+			if (seen.has(product.id)) continue;
 			await processData(conn, product, category);
-		});
+			seen.add(product.id);
+		}
 	}
 }
 

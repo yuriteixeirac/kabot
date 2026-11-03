@@ -10,7 +10,6 @@ CREATE TABLE product (
 CREATE TABLE registry (
 	id INT PRIMARY KEY AUTO_INCREMENT,
 	price DECIMAL(9, 2) NOT NULL,
-	discount_percentage DECIMAL(4, 2) NOT NULL DEFAULT 0,
 	product_id INT NOT NULL,
 	registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (product_id) REFERENCES product(id)

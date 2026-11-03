@@ -1,6 +1,6 @@
 import type { Category } from './types.js';
 import type { Connection } from 'mariadb';
-import { getDb } from './repository/database-singleton.js';
+import { closeDb, getDb } from './repository/database-singleton.js';
 import { collectCategory } from './services/kabum-service.js';
 
 async function main() {
@@ -15,10 +15,13 @@ async function main() {
 	
 	const categories: Category[] = ["hardware", "perifericos", "gamer", "computadores"];
 
+	let seenProducts: Set<number> = new Set<number>();
 	for (const category of categories) {
-		await collectCategory(conn, category);
+		await collectCategory(conn, category, seenProducts);
 	}
 
+	await closeDb();
 }
 
 main();
+
