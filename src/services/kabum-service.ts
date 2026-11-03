@@ -1,3 +1,6 @@
+import type { Connection } from 'mariadb';
+import { upsertProduct } from '../repository/product-repository.js';
+import { insertRegistry } from '../repository/registry-repository.js';
 import type { Category, KabumResponse, KabumProduct, Product, Registry } from '../types.ts';
 
 export function buildUrl(category: Category, page: number): string {
@@ -32,3 +35,28 @@ export function convertToProductSchema(kabumProduct: KabumProduct, category: Cat
 
 	return [product, registry];
 }
+
+async function processData(conn: Connection, kabumProduct: KabumProduct, category: Category): Promise<void> {
+	let [product, registry] = convertToProductSchema(kabumProduct, category);
+
+	await upsertProduct(conn, product);
+	await insertRegistry(conn, registry);
+}
+
+export async function collectCategory(conn: Connection, category: Category): Promise<void> {
+	let response: KabumResponse = await fetchPage(category, 1);
+	const totalPagesCount = response.meta.total_pages_count;
+
+	response.data.forEach(async (product: any) => {
+		await processData(conn, product, category);
+	});
+
+	for (let currentPage = 2; currentPage <= totalPagesCount; currentPage++) {
+		let response: KabumResponse = await fetchPage(category, currentPage);
+
+		response.data.forEach(async (product: any) => {
+			await processData(conn, product, category);
+		});
+	}
+}
+
