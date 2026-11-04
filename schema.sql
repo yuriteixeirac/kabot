@@ -11,6 +11,7 @@ CREATE TABLE registry (
 	id INT PRIMARY KEY AUTO_INCREMENT,
 	price DECIMAL(9, 2) NOT NULL,
 	product_id INT NOT NULL,
-	registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	registered_at DATE NOT NULL DEFAULT CURRENT_DATE,
+	snapshot_quarter INT NOT NULL CHECK (snapshot_quarter IN BETWEEN 0 AND 3), -- sob a intenção de registrar novas entradas 4 vezes por dia
 	FOREIGN KEY (product_id) REFERENCES product(id)
 );

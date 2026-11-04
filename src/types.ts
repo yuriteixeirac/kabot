@@ -26,9 +26,13 @@ export interface Product {
 	image: string | undefined;
 }
 
+export type SnapshotQuarter = 0 | 1 | 2 | 3;
+
 export interface Registry {
 	id?: number;
 	productId: number;
 	price: number;
 	registeredAt: Date;
+	snapshotQuarter: SnapshotQuarter;
 }
+
