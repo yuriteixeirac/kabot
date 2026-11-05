@@ -12,6 +12,8 @@ CREATE TABLE registry (
 	price DECIMAL(9, 2) NOT NULL,
 	product_id INT NOT NULL,
 	registered_at DATE NOT NULL DEFAULT CURRENT_DATE,
-	snapshot_quarter INT NOT NULL CHECK (snapshot_quarter IN BETWEEN 0 AND 3), -- sob a intenção de registrar novas entradas 4 vezes por dia
+	snapshot_quarter INT NOT NULL CHECK (snapshot_quarter BETWEEN 0 AND 3), -- sob a intenção de registrar novas entradas 4 vezes por dia
+
+	UNIQUE (product_id, registered_at, snapshot_quarter),
 	FOREIGN KEY (product_id) REFERENCES product(id)
 );

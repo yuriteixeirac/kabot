@@ -27,10 +27,15 @@ export function convertToProductSchema(kabumProduct: KabumProduct, category: Cat
 		image: attributes.images?.[0] ?? "",
 	}
 
+	const now = new Date();
+	const hour: string = now.toISOString().slice(11, 13);
+	const snapshotQuarter: number = Math.floor(Number(hour) / 6);
+
 	const registry: Registry = {
 		productId: kabumProduct.id,
 		price: attributes.offer?.price_with_discount ?? attributes.price_with_discount,
-		registeredAt: new Date(),
+		registeredAt: now, // só a data
+		snapshotQuarter: snapshotQuarter,
 	}
 
 	return [product, registry];
