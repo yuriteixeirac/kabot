@@ -47,7 +47,7 @@ async function processData(conn: Connection, kabumProduct: KabumProduct, categor
 
 	await upsertProduct(conn, product);
 
-	const averagePrice: number | null = await queryRegistryHistory(conn, registry);
+	const averagePrice: number = await queryRegistryHistory(conn, registry);
 	if (registry.price < averagePrice) {
 		const line: string = JSON.stringify({
 			at: new Date().toISOString(),

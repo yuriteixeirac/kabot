@@ -5,13 +5,12 @@ import { collectCategory } from './services/kabum-service.js';
 
 async function main() {
 	const conn: Connection = await getDb({
-		user: process.env.MARIADB_USER || 'root',
-		password: process.env.MARIADB_PASSWORD || '18102007',
-		host: process.env.MARIADB_HOST || 'localhost',
-		port: (process.env.MARIADB_PORT || 3306) as number,
-		database: process.env.MARIADB_DATABASE || 'kabot'
+		user: process.env.DB_USER || 'root',
+		password: process.env.DB_PASSWORD || '',
+		host: process.env.DB_HOST || 'localhost',
+		port: (process.env.DB_PORT || 3306) as number,
+		database: process.env.DB_NAME || 'kabot'
 	});
-
 	
 	const categories: Category[] = ["hardware", "perifericos", "gamer", "computadores"];
 

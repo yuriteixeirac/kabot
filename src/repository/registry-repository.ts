@@ -19,11 +19,11 @@ export async function insertRegistry(conn: Connection, registry: Registry) {
 	}
 }
 
-export async function queryRegistryHistory(conn: Connection, registry: Registry): Promise<number | null> {
+export async function queryRegistryHistory(conn: Connection, registry: Registry): Promise<number> {
 	const result = await conn.query<{ average: number | null }>(
 		'SELECT AVG(price) as average FROM registry WHERE registered_at > ADD_MONTHS(CURRENT_DATE, -1) AND product_id = ?',
 		[registry.productId]
 	);
-	return result[0].average;
+	return result.average ?? 0;
 }
 
