@@ -2,6 +2,7 @@ import type { Connection } from 'mariadb';
 import { upsertProduct } from '../repository/product-repository.js';
 import { insertRegistry, queryRegistryHistory } from '../repository/registry-repository.js';
 import type { Category, KabumResponse, KabumProduct, Product, Registry } from '../types.ts';
+import { appendFile } from 'node:fs/promises';
 
 export function buildUrl(category: Category, page: number): string {
 	return `https://servicespub.prod.api.aws.grupokabum.com.br/catalog/v2/products-by-category/${category}?page_number=${page}&page_size=100&facet_filters=&sort=most_searched&is_prime=false&payload_data=products_category_filters&include=gift`;
@@ -45,13 +46,18 @@ async function processData(conn: Connection, kabumProduct: KabumProduct, categor
 	let [product, registry] = convertToProductSchema(kabumProduct, category);
 
 	await upsertProduct(conn, product);
-	await insertRegistry(conn, registry);
 
 	const averagePrice: number | null = await queryRegistryHistory(conn, registry);
-
 	if (registry.price < averagePrice) {
-		console.log(`${product.title}: ABAIXO DA MÉDIA MENSAL!! R$ ${registry.price}`);
+		const line: string = JSON.stringify({
+			at: new Date().toISOString(),
+			productTitle: product.title,
+			price: registry.price,
+		});
+		await appendFile('promocoes.log', line + '\n');
 	}
+
+	await insertRegistry(conn, registry);
 }
 
 export async function collectCategory(conn: Connection, category: Category, seen: Set<number>): Promise<void> {
