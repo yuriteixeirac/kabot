@@ -6,7 +6,7 @@ import { collectCategory } from './services/kabum-service.js';
 async function main() {
 	const conn: Connection = await getDb({
 		user: process.env.MARIADB_USER || 'root',
-		password: process.env.MARIADB_PASSWORD || 'root',
+		password: process.env.MARIADB_PASSWORD || '18102007',
 		host: process.env.MARIADB_HOST || 'localhost',
 		port: (process.env.MARIADB_PORT || 3306) as number,
 		database: process.env.MARIADB_DATABASE || 'kabot'

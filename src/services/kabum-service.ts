@@ -1,6 +1,6 @@
 import type { Connection } from 'mariadb';
 import { upsertProduct } from '../repository/product-repository.js';
-import { insertRegistry } from '../repository/registry-repository.js';
+import { insertRegistry, queryRegistryHistory } from '../repository/registry-repository.js';
 import type { Category, KabumResponse, KabumProduct, Product, Registry } from '../types.ts';
 
 export function buildUrl(category: Category, page: number): string {
@@ -46,6 +46,12 @@ async function processData(conn: Connection, kabumProduct: KabumProduct, categor
 
 	await upsertProduct(conn, product);
 	await insertRegistry(conn, registry);
+
+	const averagePrice: number | null = await queryRegistryHistory(conn, registry);
+
+	if (registry.price < averagePrice) {
+		console.log(`${product.title}: ABAIXO DA MÉDIA MENSAL!! R$ ${registry.price}`);
+	}
 }
 
 export async function collectCategory(conn: Connection, category: Category, seen: Set<number>): Promise<void> {
